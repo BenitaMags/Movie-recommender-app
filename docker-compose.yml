@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  # Frontend (React App)
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"    # Access at http://localhost:3000
+    environment:
+      - REACT_APP_API_URL=http://localhost:3001
+    depends_on:
+      - backend
+
+  # Backend (All APIs in one service)
+  backend:
+    build: ./backend
+    ports:
+      - "3001:3001"    # Backend APIs
+    environment:
+      - DB_HOST=database
+      - DB_PORT=3306
+      - DB_NAME=movies
+      - DB_USER=root
+      - DB_PASS=password123
+      # S3 Configuration (add your actual credentials)
+      - AWS_ACCESS_KEY_ID=your_access_key_here
+      - AWS_SECRET_ACCESS_KEY=your_secret_key_here
+      - AWS_REGION=us-east-1
+      - S3_BUCKET_NAME=your-movie-media-bucket
+    depends_on:
+      - database
+
+  # Database (MySQL)
+  database:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=password123
+      - MYSQL_DATABASE=movies
+      - MYSQL_USER=movieuser
+      - MYSQL_PASSWORD=password123
+    ports:
+      - "3306:3306"
+    volumes:
+      - movie_data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password
+
+volumes:
+  movie_data:
